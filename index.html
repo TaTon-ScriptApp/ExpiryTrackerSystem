@@ -74,9 +74,8 @@
       <h1 class="text-2xl font-bold" id="appNameDisp">Expiry Tracker</h1>
       <p class="text-sm text-slate-500 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
       
-      <!-- เวอร์ชั่นและ Dev ตามที่ต้องการ -->
-      <p class="text-xs font-mono text-gray-400 mt-1">Version: 7.0 (Ultimate Edition)</p>
-      <p class="text-xs font-mono text-gray-200 mt-0.5 font-semibold">Dev: Kitti Prapakarn</p>
+      <p class="text-xs font-mono text-slate-400 mt-1">Version: 7.0 (Ultimate Edition)</p>
+      <p class="text-xs font-mono text-slate-500 mt-0.5 font-medium">Dev: Kitti Prapakarn</p>
     </div>
     
     <div class="space-y-4">
@@ -246,7 +245,6 @@ function applyAdminTheme(hexColor) {
   if(!hexColor) hexColor = '#dc2626'; document.documentElement.style.setProperty('--theme-main', hexColor); 
 }
 
-/* ระบบ PWA (ปรับแต่งการเด้ง Pop-up) */
 window.addEventListener('beforeinstallprompt', function(e) { 
   e.preventDefault(); deferredPrompt = e; 
   if(el('btnInstallPwa')){ el('btnInstallPwa').innerHTML = '<i class="fa-solid fa-download mr-2"></i> ติดตั้งแอปลงมือถือทันที'; el('btnInstallPwa').classList.replace('btn-secondary', 'btn-primary'); } 
@@ -396,8 +394,8 @@ async function doQuickAction(btnId, productId, actionStatus) {
    ======================================================== */
 async function render_dashboard() {
   try {
-    const d = await gas('getDashboardData'); State.cache.dash = d; const s = d.summary;
-    if(!State.cache.cats) { State.cache.cats = await gas('getCategories'); }
+    const [d, cats] = await Promise.all([ gas('getDashboardData'), gas('getCategories') ]);
+    State.cache.dash = d; const s = d.summary; State.cache.cats = cats;
     
     const lineBox = State.user.Role === 'admin' ? `<div class="bg-white rounded-2xl shadow-sm border p-5 mb-6 flex flex-col md:flex-row justify-between items-center gap-4"><div><h3 class="font-bold text-lg"><i class="fa-brands fa-line text-green-500"></i> ส่งแจ้งเตือนผ่าน LINE Notify</h3><p class="text-xs text-slate-500 mt-1">กดเพื่อส่งสรุปรายการสินค้าใกล้หมดอายุไปยัง LINE ทันที</p></div><button onclick="sendLineAlert()" id="btnLine" class="btn bg-green-500 text-white hover:bg-green-600 px-6 py-3 shadow-md"><i class="fa-solid fa-paper-plane mr-2"></i> ส่งแจ้งเตือนตอนนี้</button></div>` : '';
 
@@ -461,8 +459,8 @@ function exportUrgentCSV() {
    ======================================================== */
 async function render_products() {
   try {
-    const d = await gas('getDashboardData'); State.cache.products = d.products;
-    if(!State.cache.cats || !State.cache.locs) { State.cache.cats = await gas('getCategories'); State.cache.locs = await gas('getLocations'); }
+    const [d, cats, locs] = await Promise.all([ gas('getDashboardData'), gas('getCategories'), gas('getLocations') ]);
+    State.cache.products = d.products; State.cache.cats = cats; State.cache.locs = locs;
     
     let catOptions = State.cache.cats.map(c => `<option value="${c.CategoryName}">${c.CategoryName}</option>`).join('');
 
@@ -578,7 +576,7 @@ window.render_locations = makePage({ title:'Locations', id:'LocationID', fetchFn
 window.render_users = makePage({ title:'Users', id:'UserID', fetchFn:'getUsers', addFn:'addUser', updFn:'updateUser', delFn:'deleteUser', cols:[{key:'EmpID',label:'รหัสพนักงาน',fmt:function(v){return `<span class="font-mono text-slate-500">${v}</span>`;}},{key:'Username',label:'Username'},{key:'FullName',label:'ชื่อพนักงาน'},{key:'Role',label:'สิทธิ์การเข้าถึง',fmt:function(v){return `<span class="badge ${v==='admin'?'bg-red-100 text-red-600':'bg-blue-100 text-blue-600'}">${v}</span>`;}}], fields:[{key:'EmpID',label:'รหัสพนักงาน (เว้นว่างระบบจะรันให้)'},{key:'Username',label:'Username'},{key:'Password',label:'Password (ถ้าสร้างใหม่)'},{key:'FullName',label:'ชื่อ-นามสกุล'},{key:'Role',label:'สิทธิ์',type:'select',opts:[{v:'admin',l:'ผู้ดูแล (Admin)'},{v:'user',l:'ผู้ใช้งาน'}]},{key:'Status',label:'สถานะ',type:'select',opts:[{v:'active',l:'เปิดใช้งาน'},{v:'inactive',l:'ปิดบัญชี'}]}] });
 
 /* ========================================================
-   3. ประวัติการใช้งาน: แสดง Card UI รองรับมือถือเต็มรูปแบบ
+   3. ประวัติการใช้งาน: แสดง Card UI รองรับมือถือเต็มรูปแบบ (แยกวัน/เวลา)
    ======================================================== */
 async function render_activity() {
   try {
