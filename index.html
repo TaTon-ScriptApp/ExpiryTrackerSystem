@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Expiry Tracker System</title>
 
+  <!-- เชื่อมต่อระบบ PWA -->
   <link rel="manifest" href="./manifest.json">
   <script>
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
@@ -68,7 +69,7 @@
       <h1 class="text-2xl font-bold" id="appNameDisp">Expiry Tracker</h1>
       <p class="text-sm text-slate-500 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
       
-      <p class="text-xs font-mono text-slate-400 mt-1">Version: 8.2 (Floating Button)</p>
+      <p class="text-xs font-mono text-slate-400 mt-1">Version: 8.3 (UI Fix)</p>
       <!-- คงข้อความ Dev เป็นสีเทาตามที่ต้องการ -->
       <p class="text-xs font-mono text-slate-500 mt-0.5 font-medium">Dev: Kitti Prapakarn</p>
     </div>
@@ -90,9 +91,10 @@
   </div>
 </div>
 
-<!-- โครงสร้างแอปหลัก -->
-<div id="app" class="hidden h-screen w-full flex">
+<!-- โครงสร้างแอปหลัก ใช้ h-[100dvh] เพื่อแก้ปัญหาเปิดในแอป LINE แล้วล้นจอ -->
+<div id="app" class="hidden h-[100dvh] w-full flex">
   
+  <!-- เมนูด้านข้าง (โชว์เฉพาะคอมพิวเตอร์) -->
   <aside id="sidebar" class="w-64 bg-slate-900 text-white hidden md:flex flex-col relative z-50">
     <div class="p-5 border-b border-white/10 flex justify-between items-center">
       <div class="flex items-center gap-3">
@@ -130,16 +132,18 @@
     </div>
   </aside>
 
-  <main class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-slate-50 relative">
+  <!-- พื้นที่หน้าจอหลัก -->
+  <main class="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-y-auto bg-slate-50 relative">
     <header class="bg-white border-b px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
       <h1 id="pageTitle" class="text-xl font-bold uppercase text-slate-800">หน้าแรก</h1>
       <button onclick="loadCurrentPage()" class="btn-icon bg-slate-100 active:bg-slate-200"><i class="fa-solid fa-arrows-rotate text-lg text-slate-500"></i></button>
     </header>
+    <!-- เว้นที่ว่างด้านล่าง ไม่ให้แถบเมนูบังข้อมูล -->
     <div id="content" class="p-4 md:p-6 pb-28 w-full"></div>
   </main>
 
-  <!-- แถบเมนูด้านล่าง (เพิ่มปุ่ม + ตรงกลาง) -->
-  <nav id="bottomNav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-safe pt-2 px-1 relative">
+  <!-- แถบเมนูด้านล่าง (ลบคำสั่ง relative ออกเพื่อแก้บัคหน้าจอพัง) -->
+  <nav id="bottomNav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-safe pt-2 px-1">
     <button onclick="navigate('dashboard')" class="nav-bottom-link flex flex-col items-center text-main w-[20%]" data-page="dashboard" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-chart-pie text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">หน้าแรก</span>
@@ -300,7 +304,7 @@ async function initApp() {
 
 const PAGE_INFO = { dashboard:'แดชบอร์ดสรุปผล', products:'รายการสินค้าทั้งหมด', categories:'หมวดหมู่ และ วันเตือน', locations:'สถานที่จัดเก็บ', users:'จัดการพนักงาน', settings:'ตั้งค่าระบบ & LINE', activity:'ประวัติการใช้งาน (Log)' };
 
-/* เปิดหน้าเมนูในมือถือ (เฉพาะตั้งค่าระบบ Admin) */
+/* เปิดหน้าเมนูตั้งค่าสำหรับ Admin ในมือถือ */
 function openMobileMenu() {
   let html = '<div class="space-y-3 mt-2">';
   if (State.user.Role === 'admin') {
@@ -389,7 +393,7 @@ async function doQuickAction(btnId, productId, actionStatus) {
 }
 
 /* ========================================================
-   แดชบอร์ด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่)
+   แดชบอร์ด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่ที่แก้บัคตัดช่องว่างแล้ว)
    ======================================================== */
 async function render_dashboard() {
   try {
@@ -454,7 +458,7 @@ function exportUrgentCSV() {
 }
 
 /* ========================================================
-   รายการสินค้าทั้งหมด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่)
+   2. รายการสินค้าทั้งหมด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่)
    ======================================================== */
 async function render_products() {
   try {
@@ -617,6 +621,9 @@ window.render_categories = makePage({ title:'Categories', id:'CategoryID', fetch
 window.render_locations = makePage({ title:'Locations', id:'LocationID', fetchFn:'getLocations', addFn:'addLocation', updFn:'updateLocation', delFn:'deleteLocation', cols:[{key:'LocationName',label:'ชื่อสถานที่เก็บ'}], fields:[{key:'LocationName',label:'ชื่อสถานที่เก็บ'}] });
 window.render_users = makePage({ title:'Users', id:'UserID', fetchFn:'getUsers', addFn:'addUser', updFn:'updateUser', delFn:'deleteUser', cols:[{key:'EmpID',label:'รหัสพนักงาน',fmt:function(v){return `<span class="font-mono text-slate-500">${v}</span>`;}},{key:'Username',label:'Username'},{key:'FullName',label:'ชื่อพนักงาน'},{key:'Role',label:'สิทธิ์การเข้าถึง',fmt:function(v){return `<span class="badge ${v==='admin'?'bg-red-100 text-red-600':'bg-blue-100 text-blue-600'}">${v}</span>`;}}], fields:[{key:'EmpID',label:'รหัสพนักงาน (เว้นว่างระบบจะรันให้)'},{key:'Username',label:'Username'},{key:'Password',label:'Password (ถ้าสร้างใหม่)'},{key:'FullName',label:'ชื่อ-นามสกุล'},{key:'Role',label:'สิทธิ์',type:'select',opts:[{v:'admin',l:'ผู้ดูแล (Admin)'},{v:'user',l:'ผู้ใช้งาน'}]},{key:'Status',label:'สถานะ',type:'select',opts:[{v:'active',l:'เปิดใช้งาน'},{v:'inactive',l:'ปิดบัญชี'}]}] });
 
+/* ========================================================
+   3. ประวัติการใช้งาน: แสดง Card UI รองรับมือถือเต็มรูปแบบ
+   ======================================================== */
 async function render_activity() {
   try {
     const logs = await gas('getActivityLogs');
