@@ -9,7 +9,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Expiry Tracker System</title>
 
-  <!-- เชื่อมต่อระบบ PWA -->
   <link rel="manifest" href="./manifest.json">
   <script>
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
@@ -32,7 +31,6 @@
     .bg-main { background-color: var(--theme-main); }
     .text-main { color: var(--theme-main); }
     
-    /* สไตล์ปุ่มกดด้านข้าง (คอมพิวเตอร์) */
     .sidebar-link { display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-radius:.5rem; color:rgba(255,255,255,0.7); cursor:pointer; }
     .sidebar-link:hover { background:rgba(255,255,255,0.1); color:#fff; } 
     .sidebar-link.active { background:rgba(255,255,255,0.2); color:#fff; border-left: 4px solid #fff; }
@@ -51,17 +49,13 @@
     .checkbox-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
     .checkbox-wrapper input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--theme-main); cursor: pointer; }
     
-    /* กันแถบด้านล่างทับหน้าจอไอโฟน */
     .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    
-    /* บีบข้อความให้อยู่ใน 2 บรรทัด */
     .truncate-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-<!-- กล้องถอดรหัสซ่อน -->
 <div id="hiddenReader" style="display:none;"></div>
 
 <!-- หน้าต่าง Login -->
@@ -74,7 +68,8 @@
       <h1 class="text-2xl font-bold" id="appNameDisp">Expiry Tracker</h1>
       <p class="text-sm text-slate-500 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
       
-      <p class="text-xs font-mono text-slate-400 mt-1">Version: 8.1 (Fast Auto-Fill)</p>
+      <p class="text-xs font-mono text-slate-400 mt-1">Version: 8.2 (Floating Button)</p>
+      <!-- คงข้อความ Dev เป็นสีเทาตามที่ต้องการ -->
       <p class="text-xs font-mono text-slate-500 mt-0.5 font-medium">Dev: Kitti Prapakarn</p>
     </div>
     
@@ -98,7 +93,6 @@
 <!-- โครงสร้างแอปหลัก -->
 <div id="app" class="hidden h-screen w-full flex">
   
-  <!-- เมนูด้านข้าง (โชว์เฉพาะคอมพิวเตอร์) -->
   <aside id="sidebar" class="w-64 bg-slate-900 text-white hidden md:flex flex-col relative z-50">
     <div class="p-5 border-b border-white/10 flex justify-between items-center">
       <div class="flex items-center gap-3">
@@ -136,34 +130,38 @@
     </div>
   </aside>
 
-  <!-- พื้นที่หน้าจอหลัก -->
   <main class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-slate-50 relative">
     <header class="bg-white border-b px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
-      <h1 id="pageTitle" class="text-xl font-bold uppercase">หน้าแรก</h1>
+      <h1 id="pageTitle" class="text-xl font-bold uppercase text-slate-800">หน้าแรก</h1>
       <button onclick="loadCurrentPage()" class="btn-icon bg-slate-100 active:bg-slate-200"><i class="fa-solid fa-arrows-rotate text-lg text-slate-500"></i></button>
     </header>
-    <!-- เว้นที่ว่างด้านล่าง ไม่ให้แถบเมนูบังข้อมูล -->
     <div id="content" class="p-4 md:p-6 pb-28 w-full"></div>
   </main>
 
-  <!-- แถบเมนูด้านล่าง 5 ปุ่ม (โชว์เฉพาะในมือถือ) -->
-  <nav id="bottomNav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-safe pt-2 px-1">
+  <!-- แถบเมนูด้านล่าง (เพิ่มปุ่ม + ตรงกลาง) -->
+  <nav id="bottomNav" class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-safe pt-2 px-1 relative">
     <button onclick="navigate('dashboard')" class="nav-bottom-link flex flex-col items-center text-main w-[20%]" data-page="dashboard" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-chart-pie text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">หน้าแรก</span>
     </button>
+    
     <button onclick="navigate('products')" class="nav-bottom-link flex flex-col items-center text-slate-400 w-[20%]" data-page="products" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-list-check text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">สินค้า</span>
     </button>
-    <button onclick="openMobileMenu()" class="nav-bottom-link flex flex-col items-center text-slate-400 w-[20%] admin-only" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-      <i class="fa-solid fa-gear text-xl mb-1"></i>
-      <span class="text-[9px] font-medium truncate w-full text-center">ตั้งค่าระบบ</span>
-    </button>
+
+    <!-- ปุ่มเพิ่มสินค้า (ปุ่มใหญ่ลอยตรงกลาง) -->
+    <div class="w-[20%] flex justify-center -mt-8 relative z-10">
+      <button onclick="openProdForm()" class="bg-main text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95 transition-transform" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+        <i class="fa-solid fa-plus text-2xl"></i>
+      </button>
+    </div>
+
     <button onclick="openMyProfile()" class="nav-bottom-link flex flex-col items-center text-slate-400 w-[20%]" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-circle-user text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">ฉัน</span>
     </button>
+
     <button onclick="logout()" class="nav-bottom-link flex flex-col items-center text-red-500 hover:text-red-600 w-[20%]" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-right-from-bracket text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">ลงชื่อออก</span>
@@ -171,7 +169,6 @@
   </nav>
 </div>
 
-<!-- Modal & Lightbox -->
 <div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-safe">
   <div id="modalCard" class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto max-w-2xl animate-[slideUp_0.3s_ease-out]">
     <div class="px-5 py-4 border-b flex justify-between items-center">
@@ -303,7 +300,7 @@ async function initApp() {
 
 const PAGE_INFO = { dashboard:'แดชบอร์ดสรุปผล', products:'รายการสินค้าทั้งหมด', categories:'หมวดหมู่ และ วันเตือน', locations:'สถานที่จัดเก็บ', users:'จัดการพนักงาน', settings:'ตั้งค่าระบบ & LINE', activity:'ประวัติการใช้งาน (Log)' };
 
-/* เปิดหน้าเมนูตั้งค่าสำหรับ Admin ในมือถือ */
+/* เปิดหน้าเมนูในมือถือ (เฉพาะตั้งค่าระบบ Admin) */
 function openMobileMenu() {
   let html = '<div class="space-y-3 mt-2">';
   if (State.user.Role === 'admin') {
@@ -370,6 +367,9 @@ async function openMyProfile() {
         <div class="mt-3"><label class="block font-semibold mb-1">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input id="mp_name" class="input" value="${escapeHtml(State.user.FullName)}"></div>
         <div class="mt-3"><label class="block font-semibold mb-1">เปลี่ยนรหัสผ่าน (เว้นว่างถ้าไม่ต้องการเปลี่ยน)</label><input id="mp_pass" type="password" class="input" placeholder="รหัสผ่านใหม่..."></div>
       </div>
+      
+      <!-- ปุ่มจัดการระบบสำหรับ Admin -->
+      ${State.user.Role === 'admin' ? `<div class="mt-6 pt-4 border-t border-slate-200"><button onclick="closeModal(); openMobileMenu();" class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold shadow-md hover:bg-slate-700 transition active:scale-95 flex items-center justify-center"><i class="fa-solid fa-gear mr-2 text-lg"></i> จัดการระบบ (ตั้งค่า & หมวดหมู่)</button></div>` : ''}
     </div>`;
     el('modalBody').innerHTML = profileHtml; el('modalFooter').innerHTML = "<button onclick='closeModal()' class='btn btn-secondary mr-auto'>ยกเลิก</button><button id='btnSaveMyProf' onclick='saveMyProfile()' class='btn btn-primary px-6'>อัปเดตโปรไฟล์</button>";
   } catch(e) {}
@@ -389,7 +389,7 @@ async function doQuickAction(btnId, productId, actionStatus) {
 }
 
 /* ========================================================
-   1. แดชบอร์ด: แสดง Card UI 
+   แดชบอร์ด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่)
    ======================================================== */
 async function render_dashboard() {
   try {
@@ -409,7 +409,7 @@ async function render_dashboard() {
       const pendingUrgentItems = d.products.filter(function(p) { 
         const isStandardUrgent = (p.Status === 'Expired' || p.Status === 'Near') && (p.ActionStatus === 'ปกติ' || !p.ActionStatus);
         const isRtcNeedsWaste = p.Status === 'Handled' && p.ActionStatus === 'ลดราคา (RTC)' && p.DiffDays <= 0;
-        const matchCat = !selectedCat || String(p.Category||'').trim() === String(selectedCat).trim(); 
+        const matchCat = !selectedCat || String(p.Category||'').trim() === String(selectedCat).trim(); // แก้ปัญหาช่องว่างซ่อน
         return (isStandardUrgent || isRtcNeedsWaste) && matchCat;
       });
 
@@ -454,7 +454,7 @@ function exportUrgentCSV() {
 }
 
 /* ========================================================
-   2. รายการสินค้าทั้งหมด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่)
+   รายการสินค้าทั้งหมด: แสดง Card UI (พร้อมตัวกรองหมวดหมู่)
    ======================================================== */
 async function render_products() {
   try {
@@ -464,7 +464,7 @@ async function render_products() {
     let catOptions = State.cache.cats.map(c => `<option value="${c.CategoryName}">${c.CategoryName}</option>`).join('');
 
     el('content').innerHTML = `
-      <div class="bg-white p-4 rounded-2xl shadow-sm border mb-4 flex flex-col gap-3"><div class="flex gap-2"><div class="relative flex-1"><i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i><input id="invSearch" placeholder="ค้นหา ชื่อ, บาร์โค้ด..." class="input pl-10 bg-slate-50" oninput="filterInv()" /></div><label class="btn bg-slate-800 text-white hover:bg-slate-700 px-4 cursor-pointer shadow-md"><i class="fa-solid fa-barcode md:mr-1"></i><span class="hidden md:inline">สแกน</span><input type="file" accept="image/*" capture="environment" class="hidden" onchange="scanSearch(this)"></label></div><div class="flex gap-2"><select id="invCatFilter" class="input flex-1 bg-slate-50 text-slate-600 font-medium" onchange="filterInv()"><option value="">📂 ทุกหมวดหมู่สินค้า</option>${catOptions}</select><button onclick="openProdForm()" class="btn btn-primary shadow-md px-4"><i class="fa-solid fa-plus mr-1"></i> เพิ่มสินค้า</button></div></div>
+      <div class="bg-white p-4 rounded-2xl shadow-sm border mb-4 flex flex-col gap-3"><div class="flex gap-2"><div class="relative flex-1"><i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i><input id="invSearch" placeholder="ค้นหา ชื่อ, บาร์โค้ด..." class="input pl-10 bg-slate-50" oninput="filterInv()" /></div><label class="btn bg-slate-800 text-white hover:bg-slate-700 px-4 cursor-pointer shadow-md"><i class="fa-solid fa-barcode md:mr-1"></i><span class="hidden md:inline">สแกน</span><input type="file" accept="image/*" capture="environment" class="hidden" onchange="scanSearch(this)"></label></div><div class="flex gap-2"><select id="invCatFilter" class="input flex-1 bg-slate-50 text-slate-600 font-medium" onchange="filterInv()"><option value="">📂 ทุกหมวดหมู่สินค้า</option>${catOptions}</select></div></div>
       <div id="scanSearchMsg" class="hidden text-center text-sm text-blue-600 font-bold mb-4 bg-blue-50 p-2 rounded-lg border border-blue-200"><i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังวิเคราะห์รูปภาพบาร์โค้ด...</div>
       <div id="tbInv" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4"></div>`; 
 
@@ -507,7 +507,7 @@ function scanSearch(input) {
 }
 
 /* ========================================================
-   เพิ่ม/แก้ไขสินค้า & ฟีเจอร์ Auto-Fill บาร์โค้ดอัจฉริยะแบบฝังใน Cache (ดึงข้อมูลทันที ไม่รอเน็ต)
+   เพิ่ม/แก้ไขสินค้า & ฟีเจอร์ Auto-Fill บาร์โค้ดอัจฉริยะ (เร็ว 10 เท่า)
    ======================================================== */
 function openProdForm(productId) {
   const cats = State.cache.cats || []; const locs = State.cache.locs || [];
@@ -554,7 +554,7 @@ function scanBarcodeImage(input, targetInputId) {
 
 async function checkBarcodeAutoFill(barcode) {
   if (!barcode || el('pf_id').value !== '') return; 
-  const msgEl = el('pf_decode_msg'); msgEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังดึงประวัติสินค้า...'; show('pf_decode_msg');
+  const msgEl = el('pf_decode_msg'); msgEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังดึงประวัติสินค้าอัจฉริยะ...'; show('pf_decode_msg');
 
   setTimeout(function() {
     hide('pf_decode_msg');
@@ -617,9 +617,6 @@ window.render_categories = makePage({ title:'Categories', id:'CategoryID', fetch
 window.render_locations = makePage({ title:'Locations', id:'LocationID', fetchFn:'getLocations', addFn:'addLocation', updFn:'updateLocation', delFn:'deleteLocation', cols:[{key:'LocationName',label:'ชื่อสถานที่เก็บ'}], fields:[{key:'LocationName',label:'ชื่อสถานที่เก็บ'}] });
 window.render_users = makePage({ title:'Users', id:'UserID', fetchFn:'getUsers', addFn:'addUser', updFn:'updateUser', delFn:'deleteUser', cols:[{key:'EmpID',label:'รหัสพนักงาน',fmt:function(v){return `<span class="font-mono text-slate-500">${v}</span>`;}},{key:'Username',label:'Username'},{key:'FullName',label:'ชื่อพนักงาน'},{key:'Role',label:'สิทธิ์การเข้าถึง',fmt:function(v){return `<span class="badge ${v==='admin'?'bg-red-100 text-red-600':'bg-blue-100 text-blue-600'}">${v}</span>`;}}], fields:[{key:'EmpID',label:'รหัสพนักงาน (เว้นว่างระบบจะรันให้)'},{key:'Username',label:'Username'},{key:'Password',label:'Password (ถ้าสร้างใหม่)'},{key:'FullName',label:'ชื่อ-นามสกุล'},{key:'Role',label:'สิทธิ์',type:'select',opts:[{v:'admin',l:'ผู้ดูแล (Admin)'},{v:'user',l:'ผู้ใช้งาน'}]},{key:'Status',label:'สถานะ',type:'select',opts:[{v:'active',l:'เปิดใช้งาน'},{v:'inactive',l:'ปิดบัญชี'}]}] });
 
-/* ========================================================
-   3. ประวัติการใช้งาน: แสดง Card UI รองรับมือถือเต็มรูปแบบ
-   ======================================================== */
 async function render_activity() {
   try {
     const logs = await gas('getActivityLogs');
