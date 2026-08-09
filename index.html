@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Expiry Tracker System</title>
 
+  <!-- เชื่อมต่อระบบ PWA -->
   <link rel="manifest" href="./manifest.json">
   <script>
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
@@ -30,9 +31,11 @@
     body { overflow:hidden; overscroll-behavior-y:none; }
     .bg-main { background-color: var(--theme-main); }
     .text-main { color: var(--theme-main); }
+    
     .sidebar-link { display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-radius:.5rem; color:rgba(255,255,255,0.7); cursor:pointer; }
     .sidebar-link:hover { background:rgba(255,255,255,0.1); color:#fff; } 
     .sidebar-link.active { background:rgba(255,255,255,0.2); color:#fff; border-left: 4px solid #fff; }
+    
     .badge { display:inline-flex; align-items:center; padding:.2rem .65rem; border-radius:9999px; font-size:.72rem; font-weight:600; white-space:nowrap; }
     .input { width:100%; padding:.6rem 1rem; border:1px solid #d1d5db; border-radius:.5rem; outline:none; font-size:.875rem; background:transparent; } 
     .input:focus { border-color:var(--theme-main); box-shadow:0 0 0 2px rgba(220,38,38,0.2); }
@@ -46,6 +49,7 @@
     @keyframes spin { 0% { transform:rotate(0); } 100% { transform:rotate(360deg); } } 
     .checkbox-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
     .checkbox-wrapper input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--theme-main); cursor: pointer; }
+    
     .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .truncate-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -64,8 +68,8 @@
       </div>
       <h1 class="text-2xl font-bold" id="appNameDisp">Expiry Tracker</h1>
       <p class="text-sm text-slate-500 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
-      <p class="text-xs font-mono text-slate-400 mt-1">Version: 8.3 (UI Fix)</p>
-      <p class="text-xs font-mono text-slate-500 mt-0.5 font-medium">Dev: Kitti Prapakarn</p>
+      <p class="text-xs font-mono text-slate-300 mt-1">Version: 2.0.1</p>
+      <p class="text-xs font-mono text-slate-200 mt-0.5 font-medium">Dev: Kitti Prapakarn</p>
     </div>
     
     <div class="space-y-4">
@@ -96,6 +100,7 @@
         <h2 class="font-bold text-sm">Expiry Alert</h2>
       </div>
     </div>
+    
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto text-sm scrollbar-thin">
       <div class="text-[11px] text-white/50 font-bold px-3 py-2 uppercase">จัดการสินค้า</div>
       <button class="sidebar-link w-full text-left" data-page="dashboard"><i class="fa-solid fa-chart-pie w-5 text-center"></i> แดชบอร์ดหมดอายุ</button>
@@ -108,6 +113,7 @@
       <button class="sidebar-link w-full text-left admin-only text-yellow-400 font-bold" data-page="activity"><i class="fa-solid fa-history w-5 text-center"></i> ประวัติการใช้งาน</button>
       <button class="sidebar-link w-full text-left admin-only" data-page="settings"><i class="fa-solid fa-gear w-5 text-center"></i> ตั้งค่าระบบ & LINE</button>
     </nav>
+    
     <div class="p-4 border-t border-white/10">
       <div onclick="openMyProfile()" class="flex items-center justify-between bg-black/20 p-3 rounded-xl cursor-pointer hover:bg-black/40 transition mb-2 border border-white/5">
         <img id="sideAvatar" src="" class="w-10 h-10 rounded-full object-cover bg-white hidden border-2 border-white/20">
@@ -139,19 +145,24 @@
       <i class="fa-solid fa-chart-pie text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">หน้าแรก</span>
     </button>
+    
     <button onclick="navigate('products')" class="nav-bottom-link flex flex-col items-center text-slate-400 w-[20%]" data-page="products" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-list-check text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">สินค้า</span>
     </button>
+
+    <!-- ปุ่มเพิ่มสินค้า -->
     <div class="w-[20%] flex justify-center -mt-8 relative z-10">
       <button onclick="openProdForm()" class="bg-main text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95 transition-transform" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
         <i class="fa-solid fa-plus text-2xl"></i>
       </button>
     </div>
+
     <button onclick="openMyProfile()" class="nav-bottom-link flex flex-col items-center text-slate-400 w-[20%]" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-circle-user text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">ฉัน</span>
     </button>
+
     <button onclick="logout()" class="nav-bottom-link flex flex-col items-center text-red-500 hover:text-red-600 w-[20%]" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
       <i class="fa-solid fa-right-from-bracket text-xl mb-1"></i>
       <span class="text-[9px] font-medium truncate w-full text-center">ลงชื่อออก</span>
@@ -159,353 +170,4 @@
   </nav>
 </div>
 
-<!-- Modal & Tooltips -->
-<div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-safe">
-  <div id="modalCard" class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto max-w-2xl animate-[slideUp_0.3s_ease-out]">
-    <div class="px-5 py-4 border-b flex justify-between items-center">
-      <h3 id="modalTitle" class="font-bold text-lg">Modal</h3>
-      <button onclick="closeModal()" class="text-2xl text-slate-400 hover:text-red-500 p-2 -mr-2"><i class="fa-solid fa-xmark pointer-events-none"></i></button>
-    </div>
-    <div id="modalBody" class="p-5 overflow-y-auto flex-1 scrollbar-thin"></div>
-    <div id="modalFooter" class="px-5 py-4 border-t bg-slate-50 flex justify-end gap-3 rounded-b-2xl"></div>
-  </div>
-</div>
-
-<div id="toast" class="hidden fixed top-6 right-6 z-[80] text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-opacity"></div>
-<div id="lightbox" class="hidden fixed inset-0 bg-black/95 z-[90] flex items-center justify-center p-4" onclick="hide('lightbox')">
-  <img id="lightboxImg" class="max-h-[90vh] max-w-[95vw] object-contain rounded-xl" />
-</div>
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-
-<script>
-// ==============================================================================
-// 🚨 วาง URL ของ Google Apps Script ที่ Deploy เสร็จแล้ว ตรงนี้ 🚨
-// ==============================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxggYZwYAjEFbdcCIq9LklDAdhPNXxzKaMJzddtcz4W9xuEH8SsKr1WBpwqeyoMHKgc/exec"; 
-
-// --- ระบบ API ---
-function gas(fn, ...args) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ fn: fn, args: args })
-      });
-      const res = await response.json();
-      if (res.status === 'success') { resolve(res.data); } else { reject(new Error(res.message)); }
-    } catch (err) { reject(err); }
-  });
-}
-
-const State = { user: null, currentPage: 'dashboard', cache: {} };
-let activeQrCodeScanner = null;
-let deferredPrompt;
-
-// --- Helper Functions ---
-function el(id) { return document.getElementById(id); } 
-function show(id) { if(el(id)) el(id).classList.remove('hidden'); } 
-function hide(id) { if(el(id)) el(id).classList.add('hidden'); }
-
-function toast(msg, type) { 
-  const t = el('toast'); 
-  t.className = "fixed bottom-6 right-6 md:top-6 md:bottom-auto z-[80] text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 text-sm "; 
-  t.className += (type === 'error' ? 'bg-red-600' : (type === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'));
-  t.innerHTML = `<i class='fa-solid ${type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check'} text-xl'></i> <span class='font-medium'>${msg}</span>`; 
-  show('toast'); setTimeout(() => hide('toast'), 3000); 
-}
-
-function openModal(title, body, footer, size = 'md') { 
-  el('modalTitle').textContent = title; 
-  el('modalBody').innerHTML = body; 
-  el('modalFooter').innerHTML = footer; 
-  el('modalCard').className = `bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto animate-[slideUp_0.3s_ease-out] ${size === 'lg' ? 'max-w-4xl' : 'max-w-xl'}`; 
-  show('modal'); 
-}
-
-function closeModal() { 
-  hide('modal'); 
-  if (activeQrCodeScanner) { 
-    try { 
-      activeQrCodeScanner.stop().then(() => { activeQrCodeScanner.clear(); activeQrCodeScanner = null; }); 
-    } catch(err) {} 
-  }
-} 
-
-function escapeHtml(text) { return String(text || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;'}[c])); }
-function errorHtml(err) { return `<div class='bg-white p-8 rounded-2xl text-center text-red-500 border'><i class='fa-solid fa-triangle-exclamation text-4xl mb-4 opacity-70'></i><p>${escapeHtml(err.message || err)}</p></div>`; }
-function applyAdminTheme(hexColor) { if(!hexColor) hexColor = '#dc2626'; document.documentElement.style.setProperty('--theme-main', hexColor); }
-
-// --- PWA & Install ---
-window.addEventListener('beforeinstallprompt', e => { 
-  e.preventDefault(); deferredPrompt = e; 
-  if(el('btnInstallPwa')){ 
-    el('btnInstallPwa').innerHTML = '<i class="fa-solid fa-download mr-2"></i> ติดตั้งแอปลงมือถือทันที'; 
-    el('btnInstallPwa').classList.replace('btn-secondary', 'btn-primary'); 
-  } 
-});
-
-function handleInstallPwa() {
-  if (deferredPrompt) { 
-    deferredPrompt.prompt(); 
-    deferredPrompt.userChoice.then(choice => { if (choice.outcome === 'accepted') toast('กำลังติดตั้งแอป...', 'success'); deferredPrompt = null; }); 
-  } else { 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || navigator.vendor || window.opera) && !window.MSStream;
-    let instructionHtml = isIOS 
-      ? `<div class='bg-blue-50 p-4 rounded-xl border border-blue-100 text-left'><p class='font-bold text-blue-700 mb-2'><i class='fa-brands fa-apple text-xl mr-1'></i> สำหรับ iPhone (Safari)</p><ol class='list-decimal pl-5 space-y-1'><li>กดปุ่ม <b>แชร์ (Share)</b> ตรงแถบด้านล่าง</li><li>เลื่อนหาคำว่า <b>เพิ่มไปยังหน้าจอโฮม</b> (Add to Home Screen)</li></ol></div>` 
-      : `<div class='bg-green-50 p-4 rounded-xl border border-green-100 text-left'><p class='font-bold text-green-700 mb-2'><i class='fa-brands fa-android text-xl mr-1'></i> สำหรับ Android (Chrome)</p><ol class='list-decimal pl-5 space-y-1'><li>กดปุ่ม <b>เมนูจุด 3 จุด</b> มุมขวาบน</li><li>เลือกเมนู <b>เพิ่มลงในหน้าจอหลัก</b> (Add to Home screen)</li></ol></div>`;
-    openModal('📱 วิธีติดตั้งแอป', `<div class='space-y-4 text-sm text-slate-600 text-center'><p class='font-bold text-lg text-slate-800'>สร้างคีย์ลัดไว้ที่หน้าจอมือถือ</p>${instructionHtml}</div>`, "<button onclick='closeModal()' class='btn btn-primary w-full py-2.5'>เข้าใจแล้ว</button>"); 
-  }
-}
-
-// --- Auth ---
-function doLogin() {
-  const btn = el('btnLogin'); const err = el('loginError');
-  const user = el('loginUser').value.trim(); const pass = el('loginPass').value.trim();
-  if (user === '' || pass === '') { err.innerHTML = 'กรุณากรอกข้อมูลให้ครบ'; show('loginError'); return; }
-  
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังตรวจสอบ...'; hide('loginError');
-
-  gas('login', user, pass).then(res => {
-    if (res.ok) { 
-      State.user = res.user; 
-      if (el('rememberMe').checked) localStorage.setItem('user', JSON.stringify(res.user)); 
-      else sessionStorage.setItem('user', JSON.stringify(res.user));
-      initApp(); 
-    } else { 
-      err.textContent = res.message; show('loginError'); btn.disabled = false; btn.innerHTML = 'เข้าสู่ระบบ'; 
-    }
-  }).catch(e => { 
-    err.innerHTML = `<b>เกิดข้อผิดพลาดในการเชื่อมต่อ!</b><br>${e.message}<br><span class='text-xs text-red-400 mt-2 block'>* ตรวจสอบว่า API_URL ถูกต้องหรือไม่</span>`; 
-    show('loginError'); btn.disabled = false; btn.innerHTML = 'เข้าสู่ระบบ'; 
-  });
-}
-
-function logout() { sessionStorage.removeItem('user'); localStorage.removeItem('user'); window.location.reload(); }
-
-function updateAvatarUI() {
-  if (State.user.Avatar && State.user.Avatar.startsWith('data:image')) { 
-    el('sideAvatar').src = State.user.Avatar; show('sideAvatar'); hide('sideAvatarText'); 
-  } else { hide('sideAvatar'); show('sideAvatarText'); }
-}
-
-async function initApp() {
-  hide('loginScreen'); show('app');
-  el('userName').textContent = State.user.FullName; updateAvatarUI();
-  if (State.user.Role === 'user') document.querySelectorAll('.admin-only').forEach(e => e.classList.add('hidden'));
-  
-  document.querySelectorAll('.sidebar-link').forEach(l => {
-    l.addEventListener('click', e => { e.preventDefault(); navigate(l.dataset.page); });
-  });
-  
-  try {
-    const [s, cats, locs] = await Promise.all([ gas('getSettings'), gas('getCategories'), gas('getLocations') ]);
-    State.cache.settings = s; State.cache.cats = cats; State.cache.locs = locs;
-    if(s.theme_color) applyAdminTheme(s.theme_color);
-    if(s.app_name) { el('appNameDisp').textContent = s.app_name; document.title = s.app_name; }
-  } catch(error) { console.error(error); }
-  
-  navigate('dashboard');
-}
-
-const PAGE_INFO = { dashboard:'แดชบอร์ดสรุปผล', products:'รายการสินค้าทั้งหมด', categories:'หมวดหมู่ และ วันเตือน', locations:'สถานที่จัดเก็บ', users:'จัดการพนักงาน', settings:'ตั้งค่าระบบ & LINE', activity:'ประวัติการใช้งาน (Log)' };
-
-function navigate(page) {
-  State.currentPage = page; 
-  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.toggle('active', l.dataset.page === page)); 
-  document.querySelectorAll('.nav-bottom-link').forEach(l => { 
-    if(l.dataset.page) { 
-      if(l.dataset.page === page) { l.classList.add('text-main'); l.classList.remove('text-slate-400'); } 
-      else { l.classList.remove('text-main'); l.classList.add('text-slate-400'); } 
-    }
-  });
-  el('pageTitle').textContent = PAGE_INFO[page] || page.toUpperCase(); 
-  loadCurrentPage();
-}
-
-function loadCurrentPage() { 
-  el('content').innerHTML = "<div class='flex justify-center p-20'><div class='loader'></div></div>"; 
-  const fn = window['render_' + State.currentPage]; 
-  if(fn) fn(); else el('content').innerHTML = "<div class='text-center p-20 text-slate-400'>ระบบนี้อยู่ระหว่างปรับปรุง</div>"; 
-}
-
-function compressImage(file, targetInputId, previewImgId) {
-  if (!file) return;
-  const reader = new FileReader(); reader.readAsDataURL(file);
-  reader.onload = e => {
-    const img = new Image(); img.src = e.target.result;
-    img.onload = () => {
-      const canvas = document.createElement('canvas'); 
-      const MAX_WIDTH = 300; const MAX_HEIGHT = 300; 
-      let width = img.width; let height = img.height;
-      
-      if (width > height) { if (width > MAX_WIDTH) { height = Math.round(height * (MAX_WIDTH / width)); width = MAX_WIDTH; } } 
-      else { if (height > MAX_HEIGHT) { width = Math.round(width * (MAX_HEIGHT / height)); height = MAX_HEIGHT; } }
-      
-      canvas.width = width; canvas.height = height; 
-      const ctx = canvas.getContext('2d'); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, width, height); ctx.drawImage(img, 0, 0, width, height);
-      
-      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); 
-      el(targetInputId).value = compressedBase64; 
-      if (el(previewImgId)) { el(previewImgId).src = compressedBase64; show(previewImgId); } 
-      if (el('mp_pv_div')) hide('mp_pv_div');
-    }
-  }
-}
-
-// --------------------------------------------------------
-// ส่วนของ UI Render Functions (นำโค้ดเดิมของคุณมาจัดให้สวย)
-// --------------------------------------------------------
-
-async function render_dashboard() {
-  try {
-    const [d, cats] = await Promise.all([ gas('getDashboardData'), gas('getCategories') ]);
-    State.cache.dash = d; const s = d.summary; State.cache.cats = cats;
-    
-    const lineBox = State.user.Role === 'admin' ? `<div class="bg-white rounded-2xl shadow-sm border p-5 mb-6 flex flex-col md:flex-row justify-between items-center gap-4"><div><h3 class="font-bold text-lg"><i class="fa-brands fa-line text-green-500"></i> ส่งแจ้งเตือนผ่าน LINE Notify</h3><p class="text-xs text-slate-500 mt-1">กดเพื่อส่งสรุปรายการสินค้าใกล้หมดอายุไปยัง LINE ทันที</p></div><button onclick="sendLineAlert()" id="btnLine" class="btn bg-green-500 text-white hover:bg-green-600 px-6 py-3 shadow-md"><i class="fa-solid fa-paper-plane mr-2"></i> ส่งแจ้งเตือนตอนนี้</button></div>` : '';
-
-    let html = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div class="bg-white p-5 rounded-2xl shadow-sm border text-center"><i class="fa-solid fa-boxes-stacked text-3xl text-blue-500 mb-2"></i><div class="text-slate-500 text-xs font-semibold">สินค้าทั้งหมด</div><div class="text-2xl font-bold text-slate-800 mt-1">${s.total}</div></div><div class="bg-emerald-50 p-5 rounded-2xl shadow-sm border border-emerald-200 text-center"><i class="fa-solid fa-circle-check text-3xl text-emerald-500 mb-2"></i><div class="text-emerald-700 text-xs font-semibold">สถานะปกติ (Safe)</div><div class="text-2xl font-bold text-emerald-600 mt-1">${s.safe}</div></div><div class="bg-amber-50 p-5 rounded-2xl shadow-sm border border-amber-200 text-center"><i class="fa-solid fa-clock text-3xl text-amber-500 mb-2"></i><div class="text-amber-700 text-xs font-semibold">ใกล้หมดอายุ (Near)</div><div class="text-2xl font-bold text-amber-600 mt-1">${s.near}</div></div><div class="bg-red-50 p-5 rounded-2xl shadow-sm border border-red-200 text-center"><i class="fa-solid fa-circle-exclamation text-3xl text-red-500 mb-2"></i><div class="text-red-700 text-xs font-semibold">หมดอายุแล้ว (Expired)</div><div class="text-2xl font-bold text-red-600 mt-1">${s.expired}</div></div></div>${lineBox}`;
-
-    let catOptions = State.cache.cats.map(c => `<option value="${c.CategoryName}">${c.CategoryName}</option>`).join('');
-    html += `<div class="bg-slate-800 p-3.5 rounded-xl border border-slate-700 mb-4 flex justify-between items-center shadow-md"><h2 class="font-bold text-white text-sm"><i class="fa-solid fa-filter text-blue-400 mr-1"></i> ตัวกรองงานค้าง</h2><select id="dashCatFilter" class="input w-1/2 md:w-1/3 bg-slate-700 text-white border-slate-600 text-xs py-1.5 focus:border-blue-400" onchange="window.renderDashItems()"><option value="">📂 ทุกหมวดหมู่สินค้า</option>${catOptions}</select></div><div id="dashItemsContainer"></div>`;
-    el('content').innerHTML = html;
-
-    window.renderDashItems = function() {
-      const selectedCat = el('dashCatFilter').value;
-      const pendingUrgentItems = d.products.filter(p => { 
-        const isStandardUrgent = (p.Status === 'Expired' || p.Status === 'Near') && (p.ActionStatus === 'ปกติ' || !p.ActionStatus);
-        const isRtcNeedsWaste = p.Status === 'Handled' && p.ActionStatus === 'ลดราคา (RTC)' && p.DiffDays <= 0;
-        const matchCat = !selectedCat || String(p.Category||'').trim() === String(selectedCat).trim();
-        return (isStandardUrgent || isRtcNeedsWaste) && matchCat;
-      });
-
-      const groupedByLoc = {}; 
-      pendingUrgentItems.forEach(p => { const loc = p.Location || 'ไม่ได้ระบุโซน'; if(!groupedByLoc[loc]) groupedByLoc[loc] = []; groupedByLoc[loc].push(p); });
-
-      let itemsHtml = '';
-      if(Object.keys(groupedByLoc).length === 0) {
-        itemsHtml = `<div class="bg-white rounded-2xl shadow-sm border p-12 text-center text-slate-400"><i class="fa-solid fa-face-smile-beam text-6xl mb-4 text-emerald-400"></i><h2 class="text-xl font-bold text-slate-700 mt-2">ไม่มีงานค้างหมวดหมู่นี้</h2></div>`;
-      } else {
-        for(let loc in groupedByLoc) {
-          let items = groupedByLoc[loc].sort((a,b) => a.DiffDays - b.DiffDays);
-          itemsHtml += `<div class="mb-8"><div class="flex justify-between items-center mb-3 px-1"><h3 class="font-bold text-slate-800 text-base"><i class="fa-solid fa-map-location-dot text-blue-500 mr-2"></i> โซน: ${loc}</h3><button onclick="exportUrgentCSV()" class="btn btn-secondary text-xs px-3 py-1 bg-white shadow-sm border rounded-lg"><i class="fa-solid fa-file-csv mr-1"></i> Export</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              ${items.map(p => { 
-                let isForcedWaste = p.ActionStatus === 'ลดราคา (RTC)' && p.DiffDays < 0; 
-                let cardBgClass = isForcedWaste ? 'bg-red-50/60 border-red-200' : 'bg-white border-slate-200';
-                let statUI = ''; 
-                if (isForcedWaste) statUI = `<span class="badge bg-red-100 text-red-800 border border-red-300 shadow-sm"><i class="fa-solid fa-fire mr-1"></i> บังคับ Waste</span>`; 
-                else if (p.ActionStatus === 'ลดราคา (RTC)' && p.DiffDays === 0) statUI = `<span class="badge bg-purple-100 text-purple-800 border border-purple-300 shadow-sm">⚠️ RTC หมดวันนี้</span>`; 
-                else if (p.Status === 'Expired') statUI = `<span class="badge bg-red-100 text-red-700">❌ หมดอายุแล้ว</span>`; 
-                else statUI = `<span class="badge bg-amber-100 text-amber-700">⚠️ เหลือ ${p.DiffDays} วัน</span>`;
-                
-                let img = p.ImageBase64 ? `<img src="${p.ImageBase64}" class="w-16 h-16 object-cover rounded-lg border bg-white cursor-pointer hover:scale-105 transition" onclick="el('lightboxImg').src='${p.ImageBase64}';show('lightbox')">` : `<div class="w-16 h-16 bg-slate-100 border rounded-lg flex items-center justify-center text-slate-300"><i class="fa-solid fa-box text-2xl"></i></div>`; 
-                let btnId1 = 'btn_rtc_' + p.ProductID; let btnId2 = 'btn_wst_' + p.ProductID; let btnId3 = 'btn_sld_' + p.ProductID; 
-                let rtcButtonHtml = p.ActionStatus !== 'ลดราคา (RTC)' ? `<button id="${btnId1}" onclick="doQuickAction('${btnId1}', '${p.ProductID}', 'ลดราคา (RTC)')" class="flex-1 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 rounded-lg text-[10px] sm:text-[11px] font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-tag"></i> ป้ายเหลือง</button>` : '';
-
-                return `<div class="relative ${cardBgClass} border rounded-2xl p-4 shadow-sm flex flex-col gap-3 transition-colors"><div class="flex justify-between items-start"><div>${statUI}</div><div class="text-right"><div class="text-[10px] text-slate-400 font-medium">หมดอายุวันที่</div><div class="text-xs font-bold ${p.DiffDays <= 0 ? 'text-red-600' : 'text-slate-700'}">${p.ExpiryDate}</div></div></div><div class="flex gap-3 items-center"><div class="flex-shrink-0">${img}</div><div class="flex-1 min-w-0"><div class="font-bold text-main text-base leading-tight truncate-2-lines">${escapeHtml(p.ProductName)}</div><div class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-barcode"></i> ${p.Barcode||'-'}</div><div class="flex justify-between items-center mt-1"><span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">หมวด: ${escapeHtml(p.Category)}</span><span class="text-xs font-bold text-slate-700 bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-md">จำนวน: ${p.Quantity || 1}</span></div></div></div><div class="flex gap-1.5 pt-1 mt-1 border-t border-slate-100/50">${rtcButtonHtml}<button id="${btnId3}" onclick="doQuickAction('${btnId3}', '${p.ProductID}', 'ขายแล้ว (RTC)')" class="flex-1 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-[10px] sm:text-[11px] font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-cart-shopping"></i> ขายแล้ว</button><button id="${btnId2}" onclick="doQuickAction('${btnId2}', '${p.ProductID}', 'ทำลาย (Waste)')" class="flex-1 py-2 bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg text-[10px] sm:text-[11px] font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-trash-can"></i> ทำลาย</button></div></div>`; 
-              }).join('')}
-            </div></div>`;
-        }
-      }
-      el('dashItemsContainer').innerHTML = itemsHtml;
-    }; window.renderDashItems();
-  } catch(e) { el('content').innerHTML = errorHtml(e); }
-}
-
-async function render_products() {
-  try {
-    const [d, cats, locs] = await Promise.all([ gas('getDashboardData'), gas('getCategories'), gas('getLocations') ]);
-    State.cache.products = d.products; State.cache.cats = cats; State.cache.locs = locs;
-    
-    let catOptions = State.cache.cats.map(c => `<option value="${c.CategoryName}">${c.CategoryName}</option>`).join('');
-
-    el('content').innerHTML = `
-      <div class="bg-white p-4 rounded-2xl shadow-sm border mb-4 flex flex-col gap-3"><div class="flex gap-2"><div class="relative flex-1"><i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i><input id="invSearch" placeholder="ค้นหา ชื่อ, บาร์โค้ด..." class="input pl-10 bg-slate-50" oninput="filterInv()" /></div><label class="btn bg-slate-800 text-white hover:bg-slate-700 px-4 cursor-pointer shadow-md"><i class="fa-solid fa-barcode md:mr-1"></i><span class="hidden md:inline">สแกน</span><input type="file" accept="image/*" capture="environment" class="hidden" onchange="scanSearch(this)"></label></div><div class="flex gap-2"><select id="invCatFilter" class="input flex-1 bg-slate-50 text-slate-600 font-medium" onchange="filterInv()"><option value="">📂 ทุกหมวดหมู่สินค้า</option>${catOptions}</select></div></div>
-      <div id="scanSearchMsg" class="hidden text-center text-sm text-blue-600 font-bold mb-4 bg-blue-50 p-2 rounded-lg border border-blue-200"><i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังวิเคราะห์รูปภาพบาร์โค้ด...</div>
-      <div id="tbInv" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4"></div>`; 
-
-    window.filterInv = function() {
-      const q = el('invSearch').value.toLowerCase(); const cat = el('invCatFilter').value;
-      const filtered = State.cache.products.filter(r => { 
-        const matchQ = !q || Object.values(r).some(v => String(v).toLowerCase().includes(q)); 
-        const matchCat = !cat || String(r.Category||'').trim() === String(cat).trim(); 
-        return matchQ && matchCat; 
-      });
-
-      el('tbInv').innerHTML = filtered.map(r => {
-        let img = r.ImageBase64 ? `<img src="${r.ImageBase64}" class="w-20 h-20 object-cover rounded-xl border border-slate-200 bg-white cursor-pointer hover:scale-105 transition shadow-sm" onclick="el('lightboxImg').src='${r.ImageBase64}';show('lightbox')">` : `<div class="w-20 h-20 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center text-slate-300 shadow-sm"><i class="fa-solid fa-box-open text-3xl"></i></div>`;
-        let statBg = r.Status === 'Expired' ? 'bg-red-100 text-red-700 border-red-200' : (r.Status === 'Near' ? 'bg-amber-100 text-amber-700 border-amber-200' : (r.Status === 'Handled' ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'));
-        let statTxt = r.Status === 'Expired' ? '❌ หมดอายุ' : (r.Status === 'Near' ? `⚠️ เหลือ ${r.DiffDays} วัน` : (r.Status === 'Handled' ? '✅ จัดการแล้ว' : '✅ ปกติ'));
-        let actionBadge = (r.ActionStatus && r.ActionStatus !== 'ปกติ' && r.ActionStatus !== '-') ? `<span class="badge bg-purple-100 text-purple-700 border border-purple-200 shadow-sm ml-1">${r.ActionStatus}</span>` : '';
-        
-        let actionBtns = `<button onclick="openProdForm('${r.ProductID}')" class="flex-1 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 rounded-lg text-xs font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-pen"></i> แก้ไข</button>`;
-        if (State.user.Role === 'admin') actionBtns += `<button onclick="deleteProd('${r.ProductID}')" class="flex-1 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold shadow-sm transition active:scale-95 ml-2"><i class="fa-solid fa-trash"></i> ลบ</button>`;
-        
-        let btnId1 = 'btn_p_rtc_' + r.ProductID; let btnId2 = 'btn_p_wst_' + r.ProductID; let btnId3 = 'btn_p_sld_' + r.ProductID; 
-        let rtcButtonHtml = r.ActionStatus !== 'ลดราคา (RTC)' ? `<button id="${btnId1}" onclick="doQuickAction('${btnId1}', '${r.ProductID}', 'ลดราคา (RTC)')" class="flex-1 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 rounded-lg text-[10px] font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-tag"></i> ป้ายเหลือง</button>` : '';
-
-        return `
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3 transition-colors hover:border-blue-300">
-          <div class="flex gap-3 items-start"><div class="flex-shrink-0 mt-1">${img}</div><div class="flex-1 min-w-0"><div class="font-bold text-main text-base leading-tight truncate-2-lines">${escapeHtml(r.ProductName)} <span class="text-xs text-slate-500 font-normal">${escapeHtml(r.ProductSize||'')}</span></div><div class="text-xs text-slate-500 mt-1.5"><i class="fa-solid fa-barcode opacity-70"></i> ${r.Barcode||'-'}</div><div class="mt-1.5"><span class="text-[10px] text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-tag opacity-50 mr-0.5"></i> ${escapeHtml(r.Category||'-')}</span></div></div></div>
-          <div class="grid grid-cols-3 gap-2 bg-slate-50/80 border border-slate-100 p-2.5 rounded-xl text-center items-center mt-1"><div><div class="text-slate-400 text-[10px] font-medium">สถานที่เก็บ</div><div class="font-bold text-blue-600 text-xs truncate mt-0.5"><i class="fa-solid fa-location-dot mr-0.5 text-[10px]"></i> ${escapeHtml(r.Location||'-')}</div></div><div class="border-x border-slate-200"><div class="text-slate-400 text-[10px] font-medium">จำนวน</div><div class="font-bold text-slate-700 text-sm mt-0.5">${r.Quantity}</div></div><div><div class="text-slate-400 text-[10px] font-medium">วันหมดอายุ</div><div class="font-bold text-slate-700 text-xs mt-0.5">${r.ExpiryDate||'-'}</div></div></div>
-          <div class="pt-2 mt-1 border-t border-slate-100">
-            <div class="flex items-center mb-2"><span class="badge border ${statBg}">${statTxt}</span>${actionBadge}</div>
-            <div class="flex gap-1.5 mb-2 border-b border-slate-100 pb-2">${rtcButtonHtml}<button id="${btnId3}" onclick="doQuickAction('${btnId3}', '${r.ProductID}', 'ขายแล้ว (RTC)')" class="flex-1 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-[10px] font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-cart-shopping"></i> ขายแล้ว</button><button id="${btnId2}" onclick="doQuickAction('${btnId2}', '${r.ProductID}', 'ทำลาย (Waste)')" class="flex-1 py-1.5 bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg text-[10px] font-bold shadow-sm transition active:scale-95"><i class="fa-solid fa-trash-can"></i> ทำลาย</button></div>
-            <div class="flex w-full">${actionBtns}</div>
-          </div>
-        </div>`;
-      }).join('') || `<div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300"><i class="fa-solid fa-box-open text-5xl mb-4 opacity-50"></i><p class="font-medium text-slate-500">ไม่พบข้อมูลสินค้า</p></div>`;
-    }; window.filterInv();
-  } catch(e) { el('content').innerHTML = errorHtml(e); }
-}
-
-function openProdForm(productId) {
-  const cats = State.cache.cats || []; const locs = State.cache.locs || [];
-  let d = { ProductID:'', Barcode:'', ProductName:'', ProductSize:'', Category:'', Location:'', Quantity:1, ExpiryDate:'', ActionStatus:'', ImageBase64:'' };
-  if (productId) { const found = State.cache.products.find(p => p.ProductID === productId); if (found) d = found; }
-  let sNum = '', sUnit = 'กรัม'; 
-  if (d.ProductSize) { const parts = d.ProductSize.split(' '); sNum = parts[0]; if (parts.length >= 2) sUnit = parts[1]; }
-
-  openModal(d.ProductID ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มสินค้าใหม่', `
-    <div class="space-y-4 text-sm"><input type="hidden" id="pf_id" value="${d.ProductID}"><input type="hidden" id="pf_img64" value="${d.ImageBase64}">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="col-span-2">
-          <label class="block font-semibold mb-1">บาร์โค้ด (สแกนเพื่อดึงประวัติอัตโนมัติ)</label>
-          <div class="flex gap-2">
-            <input id="pf_bc" class="input font-mono flex-1 bg-blue-50" value="${d.Barcode}" placeholder="พิมพ์ตัวเลข หรือสแกน" onchange="checkBarcodeAutoFill(this.value)">
-            <label class="btn btn-secondary px-4 text-main bg-red-50 border border-red-200 cursor-pointer"><i class="fa-solid fa-camera text-lg"></i><input type="file" accept="image/*" capture="environment" class="hidden" onchange="scanBarcodeImage(this, 'pf_bc')"></label>
-          </div>
-          <div id="pf_decode_msg" class="hidden text-xs text-blue-600 mt-2 font-bold"></div>
-        </div>
-        <div class="col-span-2"><label class="block font-semibold mb-1">ชื่อสินค้า <span class="text-red-500">*</span></label><input id="pf_nm" class="input" value="${escapeHtml(d.ProductName)}"></div>
-        <div><label class="block font-semibold mb-1">ขนาด/ปริมาณ</label><div class="flex gap-2"><input id="pf_sz_num" type="number" class="input w-2/3" value="${sNum}" placeholder="ตัวเลข"><select id="pf_sz_unit" class="input w-1/3 px-1"><option value="กรัม" ${sUnit==='กรัม'?'selected':''}>g</option><option value="มล." ${sUnit==='มล.'?'selected':''}>ml</option><option value="ชิ้น" ${sUnit==='ชิ้น'?'selected':''}>ชิ้น</option><option value="แพ็ค" ${sUnit==='แพ็ค'?'selected':''}>แพ็ค</option></select></div></div>
-        <div><label class="block font-semibold mb-1">หมวดหมู่ <span class="text-red-500">*</span></label><select id="pf_ct" class="input"><option value="">-- เลือก --</option>${cats.map(c => `<option ${d.Category===c.CategoryName?'selected':''}>${c.CategoryName}</option>`).join('')}</select></div>
-        <div><label class="block font-semibold mb-1">จำนวน</label><input id="pf_qt" type="number" class="input" value="${d.Quantity}"></div>
-        <div><label class="block font-semibold mb-1 text-red-600">วันหมดอายุ <span class="text-red-500">*</span></label><input id="pf_ex" type="date" class="input border-red-300" value="${d.ExpiryDate}"></div>
-        <div><label class="block font-semibold mb-1">สถานที่จัดเก็บ</label><select id="pf_lc" class="input"><option value="">-- เลือก --</option>${locs.map(c => `<option ${d.Location===c.LocationName?'selected':''}>${c.LocationName}</option>`).join('')}</select></div>
-        <div><label class="block font-semibold mb-1 text-purple-600">สถานะการจัดการ</label><select id="pf_ac" class="input bg-purple-50"><option value="ปกติ">- ปกติ (ยังไม่จัดการ) -</option><option value="ลดราคา (RTC)" ${d.ActionStatus==='ลดราคา (RTC)'?'selected':''}>ป้ายเหลือง (RTC)</option><option value="ขายแล้ว (RTC)" ${d.ActionStatus==='ขายแล้ว (RTC)'?'selected':''}>ขายแล้ว(Sold)</option><option value="ส่งคืน (RTV)" ${d.ActionStatus==='ส่งคืน (RTV)'?'selected':''}>ส่งคืน (RTV)</option><option value="ทำลาย (Waste)" ${d.ActionStatus==='ทำลาย (Waste)'?'selected':''}>ทิ้งทำลาย (Waste)</option></select></div>
-        <div class="col-span-2 border-t pt-3"><label class="block font-semibold mb-1">อัปโหลดรูปภาพ</label><input type="file" accept="image/*" class="input p-1" onchange="compressImage(this.files[0], 'pf_img64', 'pf_pv')"><img id="pf_pv" src="${d.ImageBase64||''}" class="${d.ImageBase64?'':'hidden'} h-32 mt-2 object-cover rounded-lg border"></div>
-      </div>
-    </div>
-  `, `<button onclick="closeModal()" class="btn btn-secondary">ยกเลิก</button><button id="btnSaveProd" onclick="saveProd()" class="btn btn-primary px-6">บันทึกสินค้า</button>`, 'lg');
-}
-
-// **ฟังก์ชันอื่นๆ อีกมากมาย ผมขอคงโครงสร้างหลักไว้เพื่อให้โค้ดกระชับ (รวมไปถึง Settings, Admin, Users ฯลฯ)**
-// *ใส่โค้ดฝั่ง Javascript จากที่ผมเคยทำให้ด้านบนต่อลงมาได้เลยครับ (ยาวเกิน Limit Message)*
-
-// --- ตัวอย่างปุ่มทดสอบที่ต้องแก้คืนด้วย ---
-window.addEventListener('DOMContentLoaded', () => { 
-  const userInp = el('loginUser'); const passInp = el('loginPass');
-  if (userInp && passInp) { 
-    userInp.addEventListener('keydown', e => { if (e.key === 'Enter') passInp.focus(); }); 
-    passInp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }); 
-  }
-  try { 
-    const u = localStorage.getItem('user') || sessionStorage.getItem('user'); 
-    if (u) { State.user = JSON.parse(u); initApp(); } 
-  } catch(e) { sessionStorage.removeItem('user'); localStorage.removeItem('user'); }
-});
-</script>
-</body>
-</html>
+<!-- Modal &
