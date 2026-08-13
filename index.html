@@ -11,6 +11,7 @@
 
   <link rel="manifest" href="./manifest.json">
   <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }</script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { 
@@ -64,13 +65,15 @@
 
 <div id="hiddenReader" style="display:none;"></div>
 
+<!-- หน้าต่าง Login (Z-index 100) -->
 <div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-[100]">
   <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative">
     <div class="text-center mb-8">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-main text-white text-4xl mb-4 shadow-lg"><i class="fa-solid fa-clock-rotate-left"></i></div>
       <h1 class="text-2xl font-bold" id="appNameDisp">Expiry Tracker</h1>
-      <p class="text-sm text-slate-300 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
-      <p class="text-xs font-mono text-slate-200 mt-1">Version: 7.0 (SaaS & Dark Mode)</p>
+      <p class="text-sm text-slate-500 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
+      <p class="text-xs font-mono text-slate-300 mt-1">Version: 7.1 (SaaS Ultimate)</p>
+ <p class="text-xs font-mono text-slate-200 mt-1">Dev:Kitti Prapakrn)</p>
     </div>
     <div class="space-y-4">
       <input id="loginUser" type="text" class="input bg-slate-50" placeholder="ชื่อผู้ใช้งาน (Username)" />
@@ -89,6 +92,7 @@
   </div>
 </div>
 
+<!-- โครงสร้างแอปหลัก -->
 <div id="app" class="hidden h-[100dvh] w-full flex">
   <aside id="sidebar" class="w-64 bg-slate-900 text-white hidden md:flex flex-col relative z-50">
     <div class="p-5 border-b border-white/10 flex justify-between items-center"><div class="flex items-center gap-3"><img src="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" class="w-10 h-10 bg-white p-1 rounded-xl"><h2 class="font-bold text-sm">Expiry Alert</h2></div></div>
@@ -139,28 +143,29 @@
   </nav>
 </div>
 
-<div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-safe">
+<!-- 🔴 แก้ไข Z-index ทะลุ 150+ เพื่อให้แสดงทับหน้าล็อกอินได้ -->
+<div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 pb-safe">
   <div id="modalCard" class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto max-w-2xl animate-[slideUp_0.3s_ease-out]">
     <div class="px-5 py-4 border-b flex justify-between items-center"><h3 id="modalTitle" class="font-bold text-lg">Modal</h3><button onclick="closeModal()" class="text-2xl text-slate-400 hover:text-red-500 p-2 -mr-2"><i class="fa-solid fa-xmark pointer-events-none"></i></button></div>
     <div id="modalBody" class="p-5 overflow-y-auto flex-1 scrollbar-thin"></div>
     <div id="modalFooter" class="px-5 py-4 border-t bg-slate-50 flex justify-end gap-3 rounded-b-2xl"></div>
   </div>
 </div>
-<div id="toast" class="hidden fixed top-6 right-6 z-[80] text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-opacity"></div>
-<div id="lightbox" class="hidden fixed inset-0 bg-black/95 z-[90] flex items-center justify-center p-4" onclick="hide('lightbox')"><img id="lightboxImg" class="max-h-[90vh] max-w-[95vw] object-contain rounded-xl" /></div>
+<div id="toast" class="hidden fixed top-6 right-6 z-[160] text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-opacity"></div>
+<div id="lightbox" class="hidden fixed inset-0 bg-black/95 z-[170] flex items-center justify-center p-4" onclick="hide('lightbox')"><img id="lightboxImg" class="max-h-[90vh] max-w-[95vw] object-contain rounded-xl" /></div>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
 // ==============================================================================
 // 🚨 นำ URL ของ Google Apps Script ที่ Deploy เสร็จแล้ว มาวางตรงนี้ 🚨
 // ==============================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzVvWMMC_BmJqI_Pf8dM1lanQSFKaQrnDYXkYUoWtybHqLG0N4wDosJo6O4GX496IPr/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbywToqbnvPR0FMK3jEJeFAF-HXqSWEcdXX402ITvf6WLSRvCJ5UQgOWp4IincE-vMLn/exec"; 
 
 // --- ระบบเรียก API + ส่ง Sheet ID ---
 function gas(fn, ...args) {
   return new Promise(async (resolve, reject) => {
     try {
-      const userSheetId = localStorage.getItem('MY_DATABASE_ID') || ''; // 🔴 ส่ง ID ไปทุกครั้ง
+      const userSheetId = localStorage.getItem('MY_DATABASE_ID') || ''; 
       const response = await fetch(API_URL, { 
         method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
         body: JSON.stringify({ fn: fn, sheetId: userSheetId, args: args }) 
@@ -183,14 +188,14 @@ function applyAdminTheme(hex) { document.documentElement.style.setProperty('--th
 
 function toast(msg, type) { 
   const t = el('toast'); 
-  t.className = `fixed bottom-6 right-6 md:top-6 md:bottom-auto z-[80] text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 text-sm ${type === 'error' ? 'bg-red-600' : (type === 'warning' ? 'bg-amber-500' : 'bg-emerald-500')}`;
+  t.className = `fixed bottom-6 right-6 md:top-6 md:bottom-auto z-[160] text-white px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 text-sm ${type === 'error' ? 'bg-red-600' : (type === 'warning' ? 'bg-amber-500' : 'bg-emerald-500')}`;
   t.innerHTML = `<i class='fa-solid ${type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check'} text-xl'></i> <span class='font-medium'>${msg}</span>`; 
   show('toast'); setTimeout(() => hide('toast'), 3000); 
 }
 
 function openModal(title, body, footer, size = 'md') { 
   el('modalTitle').textContent = title; el('modalBody').innerHTML = body; el('modalFooter').innerHTML = footer; 
-  el('modalCard').className = `bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto animate-[slideUp_0.3s_ease-out] ${size === 'lg' ? 'max-w-4xl' : 'max-w-xl'}`; show('modal'); 
+  el('modalCard').className = `bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto animate-[slideUp_0.3s_ease-out] ${size === 'lg' ? 'max-w-4xl' : 'max-w-xl'}`; show('modal'); 
 }
 function closeModal() { hide('modal'); if (activeQrCodeScanner) { try { activeQrCodeScanner.stop().then(() => { activeQrCodeScanner.clear(); activeQrCodeScanner = null; }); } catch(err) {} } } 
 
@@ -357,7 +362,7 @@ function exportUrgentCSV() {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", `Urgent_Products_${new Date().toISOString().split('T')[0]}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); toast('ส่งออกไฟล์ CSV สำเร็จ', 'success');
 }
 
-// --- Products & Scan ---
+// --- Products List ---
 async function render_products() {
   try {
     const [d, cats, locs] = await Promise.all([ gas('getDashboardData'), gas('getCategories'), gas('getLocations') ]); State.cache.products = d.products; State.cache.cats = cats; State.cache.locs = locs;
@@ -441,7 +446,7 @@ async function doQuickAction(btnId, productId, actionStatus) { const btn = el(bt
 
 // --- Profile ---
 async function openMyProfile() {
-  el('modalTitle').textContent = "โปรไฟล์ & ผลงานของฉัน"; el('modalBody').innerHTML = "<div class='flex justify-center py-10'><div class='loader'></div></div>"; el('modalFooter').innerHTML = "<button onclick='closeModal()' class='btn btn-secondary mr-auto'>ปิด</button>"; el('modalCard').className = "bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto animate-[slideUp_0.3s_ease-out] max-w-xl"; show('modal');
+  el('modalTitle').textContent = "โปรไฟล์ & ผลงานของฉัน"; el('modalBody').innerHTML = "<div class='flex justify-center py-10'><div class='loader'></div></div>"; el('modalFooter').innerHTML = "<button onclick='closeModal()' class='btn btn-secondary mr-auto'>ปิด</button>"; el('modalCard').className = "bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto animate-[slideUp_0.3s_ease-out] max-w-xl"; show('modal');
   try {
     const stats = await gas('getMyStats', State.user.UserID).catch(() => ({handledCount:0})); let rank = 'พนักงานใหม่ (Bronze)'; let rankColor = 'bg-orange-100 text-orange-700 border-orange-300'; let icon = '🥉';
     if(stats.handledCount > 50) { rank = 'ผู้เชี่ยวชาญ (Silver)'; rankColor = 'bg-slate-200 text-slate-700 border-slate-400'; icon = '🥈'; } if(stats.handledCount > 150) { rank = 'ยอดฝีมือ (Gold)'; rankColor = 'bg-yellow-100 text-yellow-700 border-yellow-400'; icon = '🥇'; } if(stats.handledCount > 500) { rank = 'ปรมาจารย์ (Diamond)'; rankColor = 'bg-blue-100 text-blue-700 border-blue-400'; icon = '💎'; }
