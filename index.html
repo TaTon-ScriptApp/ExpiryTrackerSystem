@@ -11,14 +11,27 @@
 
   <link rel="manifest" href="./manifest.json">
   <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }</script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { themeMain: 'var(--theme-main)' } } } }</script>
+  <script>
+    tailwind.config = { 
+      darkMode: 'class', 
+      theme: { 
+        extend: { 
+          colors: { 
+            themeMain: 'var(--theme-main)',
+            darkBg: '#0f172a', darkCard: '#1e293b', darkBorder: '#334155', darkText: '#f8fafc', darkMuted: '#94a3b8'
+          } 
+        } 
+      } 
+    }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
     :root { --theme-main: #dc2626; } 
-    * { font-family:'Prompt', sans-serif; transition: background-color 0.3s, border-color 0.3s; } 
+    * { font-family:'Prompt', sans-serif; transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; } 
     body { overflow:hidden; overscroll-behavior-y:none; }
     .bg-main { background-color: var(--theme-main); }
     .text-main { color: var(--theme-main); }
@@ -41,19 +54,32 @@
     .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .truncate-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* Dark Mode Overrides */
+    html.dark body { background-color: theme('colors.darkBg'); color: theme('colors.darkText'); }
+    html.dark .bg-white { background-color: theme('colors.darkCard') !important; }
+    html.dark .bg-slate-50 { background-color: theme('colors.darkBg') !important; }
+    html.dark .bg-slate-100 { background-color: theme('colors.slate.800') !important; }
+    html.dark .text-slate-800, html.dark .text-slate-700 { color: theme('colors.darkText') !important; }
+    html.dark .text-slate-600, html.dark .text-slate-500 { color: theme('colors.darkMuted') !important; }
+    html.dark .border-slate-200, html.dark .border-slate-100, html.dark .border { border-color: theme('colors.darkBorder') !important; }
+    html.dark .input { background-color: theme('colors.slate.800'); border-color: theme('colors.slate.700'); color: theme('colors.white'); }
+    html.dark .input:focus { border-color: var(--theme-main); }
+    html.dark #bottomNav { background-color: theme('colors.darkCard'); border-color: theme('colors.darkBorder'); }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
 <div id="hiddenReader" style="display:none;"></div>
 
+<!-- หน้าต่าง Login -->
 <div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-[100]">
   <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative">
     <div class="text-center mb-8">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-main text-white text-4xl mb-4 shadow-lg"><i class="fa-solid fa-clock-rotate-left"></i></div>
       <h1 class="text-2xl font-bold" id="appNameDisp">Expiry Tracker</h1>
       <p class="text-sm text-slate-500 mt-1 mb-2">ระบบแจ้งเตือนสินค้าใกล้หมดอายุ</p>
-      <p class="text-xs font-mono text-slate-300 mt-1">Version: 3.0.2</p>
+      <p class="text-xs font-mono text-slate-300 mt-1">Version: 6.0 (Dark Mode & In-App Alert)</p>
       <p class="text-xs font-mono text-slate-200 mt-0.5 font-medium">Dev: Kitti Prapakarn</p>
     </div>
     <div class="space-y-4">
@@ -67,7 +93,9 @@
   </div>
 </div>
 
+<!-- โครงสร้างแอปหลัก -->
 <div id="app" class="hidden h-[100dvh] w-full flex">
+  
   <aside id="sidebar" class="w-64 bg-slate-900 text-white hidden md:flex flex-col relative z-50">
     <div class="p-5 border-b border-white/10 flex justify-between items-center"><div class="flex items-center gap-3"><img src="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" class="w-10 h-10 bg-white p-1 rounded-xl"><h2 class="font-bold text-sm">Expiry Alert</h2></div></div>
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto text-sm scrollbar-thin">
@@ -93,9 +121,17 @@
   </aside>
 
   <main class="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-y-auto bg-slate-50 relative">
-    <header class="bg-white border-b px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+    <header class="bg-white dark:bg-slate-900 dark:border-slate-800 border-b px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
       <h1 id="pageTitle" class="text-xl font-bold uppercase text-slate-800">หน้าแรก</h1>
-      <button onclick="loadCurrentPage()" class="btn-icon bg-slate-100 active:bg-slate-200"><i class="fa-solid fa-arrows-rotate text-lg text-slate-500"></i></button>
+      <div class="flex items-center gap-2">
+        <button onclick="openNotificationModal()" class="relative btn-icon bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-sm" title="การแจ้งเตือน">
+          <i class="fa-solid fa-bell text-lg"></i>
+          <span id="notifBadge" class="hidden absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-white">0</span>
+        </button>
+        <button onclick="loadCurrentPage(); fetchNotifications();" class="btn-icon bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-sm" title="รีเฟรชข้อมูล">
+          <i class="fa-solid fa-arrows-rotate text-lg"></i>
+        </button>
+      </div>
     </header>
     <div id="content" class="p-4 md:p-6 pb-28 w-full"></div>
   </main>
@@ -124,7 +160,7 @@
 // ==============================================================================
 // 🚨 นำ URL ของ Google Apps Script ที่ Deploy เสร็จแล้ว มาวางตรงนี้ 🚨
 // ==============================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbyLaPs9k5F5JQEyS_MmbkmbwfUNpYCGAZlynFX-d_AkLzaTFL5jzT9-82VadU7-3LNr/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbyeF4NucJw9g4VHD3_GNEBYRJ82PO8foOHk79zOV4U5i20s4I88tfeXeEkPRKrrWnPI/exec"; 
 
 function gas(fn, ...args) {
   return new Promise(async (resolve, reject) => {
@@ -159,6 +195,27 @@ function openModal(title, body, footer, size = 'md') {
 }
 function closeModal() { hide('modal'); if (activeQrCodeScanner) { try { activeQrCodeScanner.stop().then(() => { activeQrCodeScanner.clear(); activeQrCodeScanner = null; }); } catch(err) {} } } 
 
+// --- โหมดกลางคืน (Dark Mode) ---
+function toggleDarkMode() {
+  const html = document.documentElement; const isDark = html.classList.contains('dark');
+  if (isDark) { html.classList.remove('dark'); localStorage.setItem('theme_mode', 'light'); toast('สลับเป็นโหมดสว่าง ☀️', 'success'); } 
+  else { html.classList.add('dark'); localStorage.setItem('theme_mode', 'dark'); toast('สลับเป็นโหมดกลางคืน 🌙', 'success'); }
+  updateDarkModeButtonUI();
+}
+function initThemeMode() {
+  const savedTheme = localStorage.getItem('theme_mode'); const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
+}
+function updateDarkModeButtonUI() {
+  const btnIcon = el('darkModeIcon'); const btnText = el('darkModeText');
+  if (btnIcon && btnText) {
+    if (document.documentElement.classList.contains('dark')) { btnIcon.className = "fa-solid fa-sun text-yellow-400 text-lg mr-2"; btnText.textContent = "เปลี่ยนเป็นโหมดสว่าง"; } 
+    else { btnIcon.className = "fa-solid fa-moon text-blue-900 text-lg mr-2"; btnText.textContent = "เปลี่ยนเป็นโหมดกลางคืน"; }
+  }
+}
+initThemeMode(); // รันตั้งแต่เปิดแอป
+
+// --- การติดตั้ง PWA ---
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; if(el('btnInstallPwa')){ el('btnInstallPwa').innerHTML = '<i class="fa-solid fa-download mr-2"></i> ติดตั้งแอปลงมือถือทันที'; el('btnInstallPwa').classList.replace('btn-secondary', 'btn-primary'); } });
 function handleInstallPwa() {
   if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(c => { if (c.outcome === 'accepted') toast('กำลังติดตั้งแอป...', 'success'); deferredPrompt = null; }); } 
@@ -169,6 +226,7 @@ function handleInstallPwa() {
   }
 }
 
+// --- Auth ---
 function doLogin() {
   const btn = el('btnLogin'); const err = el('loginError'); const u = el('loginUser').value.trim(); const p = el('loginPass').value.trim();
   if (!u || !p) { err.innerHTML = 'กรุณากรอกข้อมูลให้ครบ'; show('loginError'); return; }
@@ -179,10 +237,7 @@ function doLogin() {
   }).catch(e => { err.innerHTML = "<b>เกิดข้อผิดพลาดในการเชื่อมต่อ!</b><br>" + e.message; show('loginError'); btn.disabled = false; btn.innerHTML = 'เข้าสู่ระบบ'; });
 }
 function logout() { sessionStorage.removeItem('user'); localStorage.removeItem('user'); window.location.reload(); }
-
-function updateAvatarUI() {
-  if (State.user.Avatar && State.user.Avatar.startsWith('data:image')) { el('sideAvatar').src = State.user.Avatar; show('sideAvatar'); hide('sideAvatarText'); } else { hide('sideAvatar'); show('sideAvatarText'); }
-}
+function updateAvatarUI() { if (State.user.Avatar && State.user.Avatar.startsWith('data:image')) { el('sideAvatar').src = State.user.Avatar; show('sideAvatar'); hide('sideAvatarText'); } else { hide('sideAvatar'); show('sideAvatarText'); } }
 
 async function initApp() {
   hide('loginScreen'); show('app'); el('userName').textContent = State.user.FullName; updateAvatarUI();
@@ -192,22 +247,24 @@ async function initApp() {
     const [s, cats, locs] = await Promise.all([ gas('getSettings'), gas('getCategories'), gas('getLocations') ]);
     State.cache.settings = s; State.cache.cats = cats; State.cache.locs = locs;
     if(s.theme_color) applyAdminTheme(s.theme_color); if(s.app_name) { el('appNameDisp').textContent = s.app_name; document.title = s.app_name; }
-  } catch(error) {} navigate('dashboard');
+  } catch(error) {} 
+  navigate('dashboard');
+  fetchNotifications(); // 🔴 เรียกแจ้งเตือนทันที
 }
 
+// --- Navigation ---
 const PAGE_INFO = { dashboard:'แดชบอร์ดสรุปผล', products:'รายการสินค้าทั้งหมด', categories:'หมวดหมู่ และ วันเตือน', locations:'สถานที่จัดเก็บ', users:'จัดการพนักงาน', settings:'ตั้งค่าระบบ & LINE', activity:'ประวัติการใช้งาน (Log)' };
-
 function navigate(page) {
   State.currentPage = page; document.querySelectorAll('.sidebar-link').forEach(l => l.classList.toggle('active', l.dataset.page === page)); 
   document.querySelectorAll('.nav-bottom-link').forEach(l => { if(l.dataset.page) { if(l.dataset.page === page) { l.classList.add('text-main'); l.classList.remove('text-slate-400'); } else { l.classList.remove('text-main'); l.classList.add('text-slate-400'); } } });
   el('pageTitle').textContent = PAGE_INFO[page] || page.toUpperCase(); loadCurrentPage();
 }
-
 function loadCurrentPage() { 
   el('content').innerHTML = "<div class='flex justify-center p-20'><div class='loader'></div></div>"; 
   const fn = window['render_' + State.currentPage]; if(fn) fn(); else el('content').innerHTML = "<div class='text-center p-20 text-slate-400'>ระบบนี้อยู่ระหว่างปรับปรุง</div>"; 
 }
 
+// --- Image Compression ---
 function compressImage(file, targetInputId, previewImgId) {
   if (!file) return; const reader = new FileReader(); reader.readAsDataURL(file);
   reader.onload = e => {
@@ -221,6 +278,34 @@ function compressImage(file, targetInputId, previewImgId) {
   }
 }
 
+// --- In-App Notifications ---
+async function fetchNotifications() {
+  try {
+    const alerts = await gas('getInAppAlerts'); State.cache.alerts = alerts; const badge = el('notifBadge');
+    if (alerts.length > 0) {
+      badge.textContent = alerts.length > 99 ? '99+' : alerts.length; show('notifBadge');
+      badge.parentElement.classList.add('animate-pulse'); setTimeout(() => badge.parentElement.classList.remove('animate-pulse'), 2000);
+    } else { hide('notifBadge'); }
+  } catch(e) { console.error("โหลดแจ้งเตือนล้มเหลว:", e); }
+}
+
+function openNotificationModal() {
+  const alerts = State.cache.alerts || []; let html = '<div class="space-y-3 mt-2">';
+  if (alerts.length === 0) {
+    html += `<div class="text-center p-8 text-slate-400 bg-slate-50 rounded-xl border border-dashed"><i class="fa-regular fa-bell-slash text-5xl mb-3 opacity-30"></i><br><span class="font-bold text-slate-500">ไม่มีการแจ้งเตือน</span><br><span class="text-xs">สินค้าทุกรายการอยู่ในสถานะปกติ หรือถูกจัดการแล้ว</span></div>`;
+  } else {
+    alerts.forEach(p => {
+      let isForcedWaste = p.ActionStatus === 'ลดราคา (RTC)' && p.DiffDays < 0;
+      let icon = isForcedWaste ? '<i class="fa-solid fa-fire text-red-500"></i>' : (p.Status === 'Expired' ? '<i class="fa-solid fa-circle-exclamation text-red-500"></i>' : '<i class="fa-solid fa-triangle-exclamation text-amber-500"></i>');
+      let bg = isForcedWaste ? 'bg-red-50 border-red-200' : (p.Status === 'Expired' ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100');
+      let statText = p.Status === 'Expired' ? 'หมดอายุแล้ว!' : (isForcedWaste ? 'เลยกำหนด (บังคับทิ้ง)' : `เหลือ ${p.DiffDays} วัน`);
+      html += `<div class="${bg} border rounded-xl p-3 flex items-start gap-3 shadow-sm transition active:scale-95 cursor-pointer" onclick="closeModal(); navigate('dashboard');"><div class="text-2xl mt-1.5 drop-shadow-sm">${icon}</div><div class="flex-1 min-w-0"><div class="font-bold text-slate-800 text-sm truncate">${escapeHtml(p.ProductName)}</div><div class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot opacity-70 mr-1"></i> โซน: ${escapeHtml(p.Location || '-')}</div><div class="text-xs font-bold text-main mt-1 bg-white inline-block px-2 py-0.5 rounded border">${statText}</div></div><i class="fa-solid fa-chevron-right text-slate-300 mt-4"></i></div>`;
+    });
+  }
+  html += '</div>'; openModal('🔔 การแจ้งเตือนระบบ', html, '<button onclick="closeModal()" class="btn w-full py-3 bg-slate-800 text-white font-bold rounded-xl shadow-md">ปิดหน้าต่าง</button>');
+}
+
+// --- Dashboard ---
 async function render_dashboard() {
   try {
     const [d, cats] = await Promise.all([ gas('getDashboardData'), gas('getCategories') ]);
@@ -274,6 +359,7 @@ function exportUrgentCSV() {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", `Urgent_Products_${new Date().toISOString().split('T')[0]}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); toast('ส่งออกไฟล์ CSV สำเร็จ', 'success');
 }
 
+// --- Products List ---
 async function render_products() {
   try {
     const [d, cats, locs] = await Promise.all([ gas('getDashboardData'), gas('getCategories'), gas('getLocations') ]); State.cache.products = d.products; State.cache.cats = cats; State.cache.locs = locs;
@@ -355,13 +441,14 @@ async function saveProd() {
 function deleteProd(id) { openModal('ลบสินค้า', `<div class="text-center text-red-500 py-4"><i class="fa-solid fa-triangle-exclamation text-5xl mb-4"></i><p>ยืนยันการลบสินค้านี้ออกจากระบบ?</p></div>`, `<button onclick="closeModal()" class="btn btn-secondary">ยกเลิก</button><button onclick="gas('deleteProduct','${id}', State.user).then(()=>{closeModal();toast('ลบแล้ว','success');render_products();})" class="btn bg-red-600 text-white hover:bg-red-700 px-6">ลบข้อมูล</button>`); }
 async function doQuickAction(btnId, productId, actionStatus) { const btn = el(btnId); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; try { await gas('quickUpdateAction', productId, actionStatus, State.user); toast('จัดการรายการสำเร็จ!', 'success'); loadCurrentPage(); } catch(e) { toast(e.message, 'error'); btn.disabled = false; btn.innerHTML = 'ลองใหม่'; } }
 
+// --- โปรไฟล์ผู้ใช้ ---
 async function openMyProfile() {
   el('modalTitle').textContent = "โปรไฟล์ & ผลงานของฉัน"; el('modalBody').innerHTML = "<div class='flex justify-center py-10'><div class='loader'></div></div>"; el('modalFooter').innerHTML = "<button onclick='closeModal()' class='btn btn-secondary mr-auto'>ปิด</button>"; el('modalCard').className = "bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col mx-auto animate-[slideUp_0.3s_ease-out] max-w-xl"; show('modal');
   try {
     const stats = await gas('getMyStats', State.user.UserID).catch(() => ({handledCount:0})); let rank = 'พนักงานใหม่ (Bronze)'; let rankColor = 'bg-orange-100 text-orange-700 border-orange-300'; let icon = '🥉';
     if(stats.handledCount > 50) { rank = 'ผู้เชี่ยวชาญ (Silver)'; rankColor = 'bg-slate-200 text-slate-700 border-slate-400'; icon = '🥈'; } if(stats.handledCount > 150) { rank = 'ยอดฝีมือ (Gold)'; rankColor = 'bg-yellow-100 text-yellow-700 border-yellow-400'; icon = '🥇'; } if(stats.handledCount > 500) { rank = 'ปรมาจารย์ (Diamond)'; rankColor = 'bg-blue-100 text-blue-700 border-blue-400'; icon = '💎'; }
-    let profileHtml = `<div class="space-y-4 text-sm text-center"><div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200 mb-6 shadow-sm"><p class="text-xs text-slate-500 font-bold uppercase mb-2">🏆 ผลงานจัดการสินค้าของคุณ</p><div class="flex justify-center items-center gap-4"><div class="text-5xl drop-shadow-md">${icon}</div><div class="text-left"><div class="text-2xl font-bold text-slate-800">${stats.handledCount} <span class="text-sm font-normal text-slate-500">รายการ</span></div><div class="badge ${rankColor} border mt-1">${rank}</div></div></div></div><input type="hidden" id="mp_img64" value="${State.user.Avatar||''}"><div class="relative inline-block mx-auto group mt-2">${State.user.Avatar && State.user.Avatar.startsWith('data:image') ? `<img id="mp_pv" src="${State.user.Avatar}" class="w-24 h-24 object-cover rounded-full shadow-lg border-4 border-slate-100 mx-auto">` : `<div id="mp_pv_div" class="w-24 h-24 rounded-full shadow-lg border-4 border-slate-100 bg-slate-200 flex items-center justify-center text-3xl text-slate-400 mx-auto">👤</div><img id="mp_pv" src="" class="hidden w-24 h-24 object-cover rounded-full shadow-lg border-4 border-slate-100 mx-auto">`}<label class="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i><input type="file" accept="image/*" class="hidden" onchange="compressImage(this.files[0], 'mp_img64', 'mp_pv')"></label></div><div class="text-left mt-4"><div><label class="block font-semibold mb-1">รหัสพนักงาน</label><input class="input bg-slate-100" value="${State.user.EmpID||'-'}" disabled></div><div class="mt-3"><label class="block font-semibold mb-1">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input id="mp_name" class="input" value="${escapeHtml(State.user.FullName)}"></div><div class="mt-3"><label class="block font-semibold mb-1">เปลี่ยนรหัสผ่าน (เว้นว่างถ้าไม่ต้องการเปลี่ยน)</label><input id="mp_pass" type="password" class="input" placeholder="รหัสผ่านใหม่..."></div></div>${State.user.Role === 'admin' ? `<div class="mt-6 pt-4 border-t border-slate-200"><button onclick="closeModal(); openMobileMenu();" class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold shadow-md hover:bg-slate-700 transition active:scale-95 flex items-center justify-center"><i class="fa-solid fa-gear mr-2 text-lg"></i> จัดการระบบ (ตั้งค่า & หมวดหมู่)</button></div>` : ''}</div>`;
-    el('modalBody').innerHTML = profileHtml; el('modalFooter').innerHTML = "<button onclick='closeModal()' class='btn btn-secondary mr-auto'>ยกเลิก</button><button id='btnSaveMyProf' onclick='saveMyProfile()' class='btn btn-primary px-6'>อัปเดตโปรไฟล์</button>";
+    let profileHtml = `<div class="space-y-4 text-sm text-center"><div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200 mb-6 shadow-sm"><p class="text-xs text-slate-500 font-bold uppercase mb-2">🏆 ผลงานจัดการสินค้าของคุณ</p><div class="flex justify-center items-center gap-4"><div class="text-5xl drop-shadow-md">${icon}</div><div class="text-left"><div class="text-2xl font-bold text-slate-800">${stats.handledCount} <span class="text-sm font-normal text-slate-500">รายการ</span></div><div class="badge ${rankColor} border mt-1">${rank}</div></div></div></div><input type="hidden" id="mp_img64" value="${State.user.Avatar||''}"><div class="relative inline-block mx-auto group mt-2">${State.user.Avatar && State.user.Avatar.startsWith('data:image') ? `<img id="mp_pv" src="${State.user.Avatar}" class="w-24 h-24 object-cover rounded-full shadow-lg border-4 border-slate-100 mx-auto">` : `<div id="mp_pv_div" class="w-24 h-24 rounded-full shadow-lg border-4 border-slate-100 bg-slate-200 flex items-center justify-center text-3xl text-slate-400 mx-auto">👤</div><img id="mp_pv" src="" class="hidden w-24 h-24 object-cover rounded-full shadow-lg border-4 border-slate-100 mx-auto">`}<label class="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i><input type="file" accept="image/*" class="hidden" onchange="compressImage(this.files[0], 'mp_img64', 'mp_pv')"></label></div><div class="text-left mt-4"><div><label class="block font-semibold mb-1">รหัสพนักงาน</label><input class="input bg-slate-100" value="${State.user.EmpID||'-'}" disabled></div><div class="mt-3"><label class="block font-semibold mb-1">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input id="mp_name" class="input" value="${escapeHtml(State.user.FullName)}"></div><div class="mt-3"><label class="block font-semibold mb-1">เปลี่ยนรหัสผ่าน (เว้นว่างถ้าไม่ต้องการเปลี่ยน)</label><input id="mp_pass" type="password" class="input" placeholder="รหัสผ่านใหม่..."></div></div><div class="mt-6 pt-4 border-t border-slate-200"><button onclick="toggleDarkMode()" class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold shadow-sm hover:bg-slate-200 transition active:scale-95 flex items-center justify-center border border-slate-200"><i id="darkModeIcon" class="fa-solid fa-moon text-blue-900 text-lg mr-2"></i><span id="darkModeText">เปลี่ยนเป็นโหมดกลางคืน</span></button></div>${State.user.Role === 'admin' ? `<div class="mt-3 pt-3 border-t border-slate-200"><button onclick="closeModal(); openMobileMenu();" class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold shadow-md hover:bg-slate-700 transition active:scale-95 flex items-center justify-center"><i class="fa-solid fa-gear mr-2 text-lg"></i> จัดการระบบ (ตั้งค่า & หมวดหมู่)</button></div>` : ''}</div>`;
+    el('modalBody').innerHTML = profileHtml; el('modalFooter').innerHTML = "<button onclick='closeModal()' class='btn btn-secondary mr-auto'>ยกเลิก</button><button id='btnSaveMyProf' onclick='saveMyProfile()' class='btn btn-primary px-6'>อัปเดตโปรไฟล์</button>"; updateDarkModeButtonUI();
   } catch(e) {}
 }
 
@@ -371,6 +458,7 @@ async function saveMyProfile() {
   try { await gas('updateMyProfile', data); State.user.FullName = data.FullName; State.user.Avatar = data.Avatar; if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(State.user)); if (localStorage.getItem('user')) localStorage.setItem('user', JSON.stringify(State.user)); el('userName').textContent = State.user.FullName; updateAvatarUI(); closeModal(); toast('อัปเดตข้อมูลแล้ว', 'success'); } catch(e) { toast(e.message, 'error'); btn.disabled = false; btn.innerHTML = 'อัปเดตโปรไฟล์'; }
 }
 
+// --- ส่วนของผู้ดูแลระบบ (Admin) ---
 function openMobileMenu() {
   let html = '<div class="space-y-3 mt-2">';
   if (State.user.Role === 'admin') {
@@ -440,6 +528,7 @@ async function render_settings() {
   } catch(e) { el('content').innerHTML = errorHtml(e); }
 }
 
+// --- เริ่มทำงาน ---
 window.addEventListener('DOMContentLoaded', () => { 
   const userInp = el('loginUser'); const passInp = el('loginPass');
   if (userInp && passInp) { userInp.focus(); userInp.addEventListener('keydown', e => { if (e.key === 'Enter') passInp.focus(); }); passInp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }); }
